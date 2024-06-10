@@ -1,10 +1,11 @@
 # webpack react template
 
 ## 有什么功能
-eslint 
-Less 
+
+eslint
+Less
 css modules类型声明自动生成
-husky 
+husky
 node版本统一
 打包分析
 react热更新
@@ -58,11 +59,11 @@ pnpm add -D @babel/core @babel/preset-env @babel/preset-react @babel/preset-type
 ```
 
 ## 打包产物为什么用hash，用哪个hash，为什么用这个hash
+
 为什么用contenthash，不用别的hash
 chunkhash：The hash of the chunk, including all elements of the chunk
 contenthash：The hash of the chunk, including only elements of this content type (affected by optimization.realContentHash)
 fullhash：The full hash of compilation
-
 
 ## 前端框架react
 
@@ -146,7 +147,7 @@ package.json
     "jsx": "react-jsx",
   }
 }
-v17之后，React 与 Babel 官方进行合作，直接通过将 `react/jsx-runtime` 对 jsx 语法进行了新的转换而不依赖 `React.createElement`，因此v17使用 jsx 语法可以不引入 React，应用程序依然能正常运行。
+v17之后，React 与 Babel 官方进行合作，直接通过将`react/jsx-runtime`对 jsx 语法进行了新的转换而不依赖`React.createElement`，因此v17使用 jsx 语法可以不引入 React，应用程序依然能正常运行。
 
 ```
 function App() {
