@@ -2,22 +2,31 @@ const path = require('node:path')
 const process = require('node:process')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
+const ProgressBarPlugin = require('webpackbar')
+const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin')
 
 const isDev = process.env.NODE_ENV === 'development'
+const isAnalyzer = process.env.NODE_ENV === 'analyzer'
 
 module.exports = {
   mode: isDev ? 'development' : 'production',
   entry: './src/index.tsx',
   output: {
-    filename: 'bundle.js',
+    filename: '[name].[contenthash].js',
+    assetModuleFilename: 'images/[name]-[hash][ext][query]',
     path: path.resolve(__dirname, 'dist'),
     clean: true,
   },
+  stats: 'errors-only', // 只输出错误信息
   plugins: [
     new HtmlWebpackPlugin({
       template: 'index.html',
     }),
     new ForkTsCheckerWebpackPlugin(),
+    new ProgressBarPlugin(),
+    isAnalyzer && new BundleAnalyzerPlugin(),
+    isDev && new ReactRefreshWebpackPlugin(),
   ],
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
@@ -79,10 +88,11 @@ module.exports = {
           loader: 'babel-loader',
           options: {
             presets: [
-              ['@babel/preset-env', { useBuiltIns: 'usage' }],
+              ['@babel/preset-env', { useBuiltIns: 'usage', corejs: 3 }],
               ['@babel/preset-react', { runtime: 'automatic' }],
               ['@babel/preset-typescript'],
             ],
+            plugins: [isDev && require.resolve('react-refresh/babel')].filter(Boolean),
           },
         },
       },
@@ -95,6 +105,45 @@ module.exports = {
     ignored: /node_modules/,
   },
   optimization: {
-    minimize: false,
+    // minimize: false,//生产环境在自动开启压缩
+    splitChunks: {
+      chunks: 'all',
+      cacheGroups: {
+        vendor: {
+          name: 'chunk-vendors',
+          test: /[\\/]node_modules[\\/]/,
+          priority: 10,
+          chunks: 'initial',
+        },
+        echarts: {
+          name: 'chunk-echarts',
+          priority: 20,
+          test: /[\\/]node_modules[\\/]_?echarts|zrender(.*)/,
+        },
+        commons: {
+          name: 'chunk-commons',
+          minChunks: 3, // minimum common number
+          priority: 5,
+          reuseExistingChunk: true,
+        },
+        lib: {
+          test(module) {
+            return (
+              module.size() > 160000
+              && /node_modules[/\\]/.test(module.nameForCondition() || '')
+            )
+          },
+          name(module) {
+            const packageNameArr = module.context.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/)
+            const packageName = packageNameArr ? packageNameArr[1] : ''
+            // npm package names are URL-safe, but some servers don't like @ symbols
+            return `chunk-lib.${packageName.replace('@', '')}`
+          },
+          priority: 15,
+          minChunks: 1,
+          reuseExistingChunk: true,
+        },
+      },
+    },
   },
 }

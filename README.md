@@ -1,5 +1,14 @@
 # webpack react template
 
+## 有什么功能
+eslint 
+Less 
+css modules类型声明自动生成
+husky 
+node版本统一
+打包分析
+react热更新
+
 ## webpack初始化
 
 ```
@@ -47,6 +56,13 @@ pnpm add -D @babel/core @babel/preset-env @babel/preset-react @babel/preset-type
     },
   },
 ```
+
+## 打包产物为什么用hash，用哪个hash，为什么用这个hash
+为什么用contenthash，不用别的hash
+chunkhash：The hash of the chunk, including all elements of the chunk
+contenthash：The hash of the chunk, including only elements of this content type (affected by optimization.realContentHash)
+fullhash：The full hash of compilation
+
 
 ## 前端框架react
 
@@ -114,3 +130,38 @@ webpack.config.js
 
 package.json
 `webpack serve --config webpack.config.js`
+
+## 初始建项目遇到了问题
+
+### react18 “React”指 UMD 全局，但当前文件是模块。请考虑改为添加导入。ts(2686)
+
+解决方案：
+
+1. 每个react子组件都引入`import React from 'react';`
+2. 在TypeScript配置文件（通常是tsconfig.json）中"jsx"改为 "react-jsx"。
+
+在tsconfig.json中添加如下配置：
+{
+  "compilerOptions": {
+    "jsx": "react-jsx",
+  }
+}
+v17之后，React 与 Babel 官方进行合作，直接通过将 `react/jsx-runtime` 对 jsx 语法进行了新的转换而不依赖 `React.createElement`，因此v17使用 jsx 语法可以不引入 React，应用程序依然能正常运行。
+
+```
+function App() {
+  return <h1>Hello World</h1>;
+}
+
+// 新的 jsx 转换为
+// 由编译器引入（禁止自己引入！）
+import { jsx as _jsx } from 'react/jsx-runtime';
+
+function App() {
+  return _jsx('h1', { children: 'Hello world' });
+}
+
+```
+
+jsx: react ， input:<div> output(.js): React.createElement("div")
+jsx: react-jsx ， input:<div> output(.js): _jsx("div", {}, void 0);
