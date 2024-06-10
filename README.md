@@ -166,3 +166,8 @@ function App() {
 
 jsx: react ， input:<div> output(.js): React.createElement("div")
 jsx: react-jsx ， input:<div> output(.js): _jsx("div", {}, void 0);
+
+## husky
+
+对于git 执行命令前，去执行自定义hook
+譬如常用的commit的信息规范校验，在这里有一个提升是，只对add过的变化文件去做一个校验
